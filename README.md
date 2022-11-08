@@ -62,3 +62,9 @@ Todo
 
 #### Http Request
 Todo
+
+
+
+#### Upcoming features
+- Test PWM
+- Test I2C
