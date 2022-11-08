@@ -58,7 +58,25 @@ Assert.InRange(actualValue, 1);` // Assert expected value
 ------------
 
 #### Echo
-Todo
+The echo example sets analog pin 28 and asserts that the SUT in turn echos the same value to pin 27, the same logic is tested for digital pins 21 & 20
+
+Flash the firmware to the SUT
+
+`ElkTester/Example/Sketches/echo/echo.ino`
+
+Connect the following pins:
+28 -> 28 : analog input pin
+27 -> 27 : analog output pin
+21 -> 21 : digial input pin
+20 -> 20 : digital output pin
+
+The test device reset is implemented in hardware by connecting an npn transistor collector to the SUT run pin, emitter to SUT ground & base to ElkTestDevice pin 22.
+
+![image](https://user-images.githubusercontent.com/21103223/200681563-d62551f0-ffd3-410e-8cc9-0e8ac0e2a06b.png)
+
+Ensure both devices are plugged in and configure the ElkTestDevice port in the test projects appsettings.json
+
+`ElkTester/Example/appsettings.json`
 
 #### Http Request
 Todo
