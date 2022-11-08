@@ -33,11 +33,11 @@ ElkTest enables users to debug & test embedded systems using xunit integration t
 ------------
 There are two main components to the Elk Test framework:
 
-- The ElkTestDevice is a Raspberry Pi Pico flashed with the ElkTest firmware, each of its GPIO pins can be used to read / write data to / from the system under test. One pin of which is used to reset the SUT. The ElkTestDevice recieves requests from the test runner over a serial connection, these requests allow the tests to set inputs / read values on the SUT.
+- The ElkTestDevice is a Raspberry Pi Pico flashed with the ElkTest firmware, each of its GPIO pins can be used to read / write data to / from the system under test. One pin of which is used to reset the SUT at the start of each test. The ElkTestDevice recieves requests from the test runner over a serial connection, these requests allow the tests to set inputs & assert on outputs.
 
-- The ElkApi is a dotnet minimal API configured at the start of each test that allows the SUT connected to the same local network to connect & make requests, and the tests can then assert on the requests made.
+- The ElkApi is a dotnet minimal API configured at the start of each test that allows the SUT connected to the same local network to connect & make requests, the tests can then assert on the requests made.
 
-The tests are written in dotnet using xunit, examples can be seen below.
+Tests are written in dotnet using xunit, examples can be seen below.
 
 ### Examples:
 ------------
