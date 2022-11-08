@@ -37,22 +37,7 @@ There are two main components to the Elk Tester framework:
 
 - The ElkApi is a dotnet minimal API configured at the start of each test that allows the SUT connected to the same local network to connect & make requests, and the tests can then assert on the requests made.
 
-The tests are written in dotnet using xunit an example of a test for a device that reads the digital input for one pin and writes it to another can be seen here:
-
-```csharp
-//Arrange
-var device = await _fixture.Setup(_output);// Connect to the ElkTestDevice & reset the SUT
-
-//Act
-await device.SendAndWait(Device.Pins.Set(21, 1)); // Set pin 21 high on the ElkTestDevice
-
-await Task.Delay(1000); // Arbitrary wait time
-
-//Assert
-var pinResponse = await device.SendAndWait(Device.Pins.Get(20)); // Read value from pin 20
-var actualValue = int.Parse(pinResponse.Arguments[0]);
-Assert.InRange(actualValue, 1);` // Assert expected value
-```
+The tests are written in dotnet using xunit an examples can be seen below.
 
 ### Examples:
 ------------
@@ -77,6 +62,22 @@ The test device reset is implemented in hardware by connecting an npn transistor
 Ensure both devices are plugged in and configure the ElkTestDevice port in the test projects appsettings.json
 
 `ElkTester/Example/appsettings.json`
+
+```csharp
+ //Arrange
+var device = await _fixture.Setup(_output); // Connect to the ElkTestDevice & reset the SUT
+
+//Act
+await device.SendAndWait(Device.Pins.Set(21, input)); // Set pin 21 high on the ElkTestDevice
+
+await Task.Delay(1000); // Arbitrary wait to ensure sut loop has executed
+
+//Assert
+var pinResponse = await device.SendAndWait(Device.Pins.Get(20)); // Read value from pin 20
+var actualValue = int.Parse(pinResponse.Arguments[0]);
+Assert.Equal(expectedOutput, actualValue);
+```
+
 
 #### Http Request
 Todo
