@@ -1,6 +1,6 @@
-# Elk Tester
+# Elk Test
 
-ElkTester enables users to debug & test embedded systems using xunit integration tests and a Raspberry Pi Pico.
+ElkTest enables users to debug & test embedded systems using xunit integration tests and a Raspberry Pi Pico.
 
 #### Benefits
 - Test production code on the physical device.
@@ -20,7 +20,7 @@ ElkTester enables users to debug & test embedded systems using xunit integration
 
 `https://github.com/earlephilhower/arduino-pico/releases/download/global/package_rp2040_index.json`
 
-- Open the Elk tester firmware in Arduino IDE
+- Open the Elk test firmware in Arduino IDE
 
 `ElkTester/ElkTest/ElkFirmware/ElkFirmware.ino
 `
@@ -31,9 +31,9 @@ ElkTester enables users to debug & test embedded systems using xunit integration
 ### How does it work?
 
 ------------
-There are two main components to the Elk Tester framework:
+There are two main components to the Elk Test framework:
 
-- The ElkTestDevice is a Raspberry Pi Pico flashed with the ElkTester firmware, each of its GPIO pins can be used to read / write data to / from the system under test. One pin of which is used to reset the SUT. The ElkTestDevice recieves requests from the test runner over a serial connection, these requests allow the tests to set inputs / read values on the SUT.
+- The ElkTestDevice is a Raspberry Pi Pico flashed with the ElkTest firmware, each of its GPIO pins can be used to read / write data to / from the system under test. One pin of which is used to reset the SUT. The ElkTestDevice recieves requests from the test runner over a serial connection, these requests allow the tests to set inputs / read values on the SUT.
 
 - The ElkApi is a dotnet minimal API configured at the start of each test that allows the SUT connected to the same local network to connect & make requests, and the tests can then assert on the requests made.
 
