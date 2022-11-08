@@ -50,12 +50,17 @@ Flash the firmware to the SUT
 `ElkTester/Example/Sketches/echo/echo.ino`
 
 Connect the following pins:
+
 28 -> 28 : analog input pin
+
 27 -> 27 : analog output pin
+
 21 -> 21 : digial input pin
+
 20 -> 20 : digital output pin
 
-The test device reset is implemented in hardware by connecting an npn transistor collector to the SUT run pin, emitter to SUT ground & base to ElkTestDevice pin 22.
+
+The SUT reset is implemented in hardware by connecting an npn transistor collector to the SUT run pin, emitter to ground & base to ElkTestDevice pin 22.
 
 ![image](https://user-images.githubusercontent.com/21103223/200683937-6679051d-e61f-4599-9eb8-116fd2d8415c.png)
 
