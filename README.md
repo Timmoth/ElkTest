@@ -72,7 +72,7 @@ Connect the following pins:
 
 The test device reset is implemented in hardware by connecting an npn transistor collector to the SUT run pin, emitter to SUT ground & base to ElkTestDevice pin 22.
 
-![image](https://user-images.githubusercontent.com/21103223/200681563-d62551f0-ffd3-410e-8cc9-0e8ac0e2a06b.png)
+![image](https://user-images.githubusercontent.com/21103223/200683937-6679051d-e61f-4599-9eb8-116fd2d8415c.png)
 
 Ensure both devices are plugged in and configure the ElkTestDevice port in the test projects appsettings.json
 
