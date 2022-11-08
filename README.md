@@ -37,7 +37,7 @@ There are two main components to the Elk Tester framework:
 
 - The ElkApi is a dotnet minimal API configured at the start of each test that allows the SUT connected to the same local network to connect & make requests, and the tests can then assert on the requests made.
 
-The tests are written in dotnet using xunit an examples can be seen below.
+The tests are written in dotnet using xunit, examples can be seen below.
 
 ### Examples:
 ------------
