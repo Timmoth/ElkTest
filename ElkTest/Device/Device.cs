@@ -1,4 +1,6 @@
-﻿namespace ElkTest.Device;
+﻿using System.Collections.Generic;
+
+namespace ElkTest.Device;
 
 public static class Device
 {

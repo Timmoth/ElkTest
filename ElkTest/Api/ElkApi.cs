@@ -1,11 +1,13 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.OpenApi.Models;
-using Xunit;
 using Xunit.Abstractions;
 using Xunit.Sdk;
-using static ElkTest.Device.Device;
 
 namespace ElkTest.Api;
 
@@ -21,14 +23,6 @@ public class ElkApi : IDisposable
         _ = Task.Run(() =>
         {
             var builder = WebApplication.CreateBuilder();
-            builder.Services.AddSwaggerGen(c =>
-            {
-                c.SwaggerDoc("v1", new OpenApiInfo
-                {
-                    Title = builder.Environment.ApplicationName,
-                    Version = "v1"
-                });
-            });
 
             var app = builder.Build();
 

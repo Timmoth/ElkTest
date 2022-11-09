@@ -1,3 +1,7 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Threading.Tasks;
 using ElkTest.Api;
 using ElkTest.Device;
 using Microsoft.Extensions.Configuration;

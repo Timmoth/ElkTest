@@ -1,10 +1,29 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+		<LangVersion>10.0</LangVersion>
+		<Authors>Aptacode</Authors>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <IsPackable>true</IsPackable>
+    <Version>1.0.2</Version>
+		<AssemblyVersion>1.0.2</AssemblyVersion>
+		<FileVersion>1.0.2</FileVersion>
+		<RepositoryUrl>https://github.com/Timmoth/ElkTest</RepositoryUrl>
+		<PackageProjectUrl>https://github.com/Timmoth/ElkTest</PackageProjectUrl>
+		<Description>Debug and test embedded systems using xunit integration tests and a Raspberry Pi Pico.</Description>
+		<AssemblyName>ElkTest</AssemblyName>
+		<RootNamespace>ElkTest</RootNamespace>
+		<Title>ElkTest</Title>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+	</PropertyGroup>
+
+	<ItemGroup>
+	  <None Include="..\README.md">
+	    <Pack>True</Pack>
+	    <PackagePath>\</PackagePath>
+	  </None>
+	</ItemGroup>
   
   <ItemGroup>
     <PackageReference Include="System.IO.Ports" Version="6.0.0" />

@@ -1,3 +1,5 @@
+using System;
+
 namespace ElkTest.Api;
 
 public class ApiRequest

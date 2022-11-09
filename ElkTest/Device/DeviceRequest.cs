@@ -1,4 +1,6 @@
-﻿namespace ElkTest.Device;
+﻿using System.Collections.Generic;
+
+namespace ElkTest.Device;
 
 public class DeviceRequest
 {

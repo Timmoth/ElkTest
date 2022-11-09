@@ -1,4 +1,7 @@
-﻿namespace ElkTest.Device;
+﻿using System.Collections.Generic;
+using System.Linq;
+
+namespace ElkTest.Device;
 
 public class DeviceResponse
 {
