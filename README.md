@@ -84,8 +84,20 @@ Assert.Equal(expectedOutput, actualValue);
 ```
 
 
-#### Http Request
-Todo
+#### Network
+
+The network example makes a sequence of POST, GET, PUT, DELETE requests.
+
+Copy + Rename `arduino_secrets_example.h` => `arduino_secrets.h`
+
+Update the three arduino_secrets values.
+ELKAPI_IP is the local IP address of the machine that runs the tests.
+
+Flash the firmware to the SUT
+`ElkTest/Example/Sketches/network/network.ino`
+
+Then run the tests! 
+
 
 
 
