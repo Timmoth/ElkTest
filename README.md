@@ -90,8 +90,6 @@ Todo
 
 
 #### Upcoming
-- Add to nuget
-- GitHub actions to auto publish nuget package
 - More complex examples
 - Improve documentation
 - Test PWM
