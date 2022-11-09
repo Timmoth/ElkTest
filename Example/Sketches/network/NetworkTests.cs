@@ -2,7 +2,7 @@ using ElkTest.Api;
 using ElkTest.Test;
 using Xunit.Abstractions;
 
-namespace Example.Sketches.httpRequest
+namespace Example.Sketches.network
 {
     public class NetworkTests : ElkTestBase
     {
@@ -14,31 +14,45 @@ namespace Example.Sketches.httpRequest
         }
 
         [Fact]
-        public async void DevicePostsDataToServerAfterGetFromServer()
+        public async void DevicePerformsPostGetPutDeleteRequests()
         {
             //Arrange
-            var number = new Random().Next(0, 100);
             var (device, api) = await _fixture.Setup(_output, new List<ApiEndpoint>()
             {
                 new()
                 {
-                    Method = "GET",
-                    Path = "/api/test/data",
-                    ResponseBody =  System.Text.Json.JsonSerializer.Serialize(new { value = number})
+                    Method = "POST",
+                    Path = "/api/user",
+                    RequestBody = System.Text.Json.JsonSerializer.Serialize(new { name = "Tim"}),
+                    ResponseBody = System.Text.Json.JsonSerializer.Serialize(new { id = 1}),
                 },
                 new()
                 {
-                    Method = "POST",
-                    Path = "/api/test/data",
-                    RequestBody = System.Text.Json.JsonSerializer.Serialize(new { value = number+1})
-                }
+                    Method = "GET",
+                    Path = "/api/user/1",
+                    ResponseBody =  System.Text.Json.JsonSerializer.Serialize(new { name = "Tim"})
+                },
+                new()
+                {
+                    Method = "PUT",
+                    Path = "/api/user/1",
+                    RequestBody = System.Text.Json.JsonSerializer.Serialize(new { name = "Tim1"}),
+                },
+                new()
+                {
+                    Method = "DELETE",
+                    Path = "/api/user/1",
+                },
+
             });
 
 
             //Act
             //Assert
-            await api.WaitFor(r => r.Handled && r.Method == "GET" && r.Path == "/api/test/data", TimeSpan.FromMinutes(1));
-            await api.WaitFor(r => r.Handled && r.Method == "POST" && r.Path == "/api/test/data", TimeSpan.FromMinutes(1));
+            await api.WaitFor(r => r.Handled && r.Method == "POST" && r.Path == "/api/user", TimeSpan.FromMinutes(1));
+            await api.WaitFor(r => r.Handled && r.Method == "GET" && r.Path == "/api/user/1", TimeSpan.FromMinutes(1));
+            await api.WaitFor(r => r.Handled && r.Method == "PUT" && r.Path == "/api/user/1", TimeSpan.FromMinutes(1));
+            await api.WaitFor(r => r.Handled && r.Method == "DELETE" && r.Path == "/api/user/1", TimeSpan.FromMinutes(1));
         }
     }
 }
