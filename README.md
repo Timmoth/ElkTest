@@ -88,6 +88,8 @@ Assert.Equal(expectedOutput, actualValue);
 
 The network example makes a sequence of POST, GET, PUT, DELETE requests.
 
+This example uses [HttpRequester](https://github.com/Timmoth/HttpRequester "HttpRequester") to make HttpRequests on the SUT. See project readme for instructions on installing the library.
+
 Copy + Rename `arduino_secrets_example.h` => `arduino_secrets.h`
 
 Update the three arduino_secrets values.
@@ -97,8 +99,6 @@ Flash the firmware to the SUT
 `ElkTest/Example/Sketches/network/network.ino`
 
 Then run the tests! 
-
-
 
 
 #### Upcoming
