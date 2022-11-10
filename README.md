@@ -3,10 +3,11 @@
 ElkTest enables users to debug & test embedded systems using xunit integration tests and a Raspberry Pi Pico.
 
 #### Benefits
-- Test production code on the physical device.
+- Test production code on the physical device
 - No need to write any abstractions around device specific libraries
 - Simulating hardware inputs enables you to reliably test your code without physically recreating scenarios
 - Easily test networking / http requests
+- Device / Platform agnostic
 
 ### Setup:
 
@@ -100,6 +101,9 @@ Flash the firmware to the SUT
 
 Then run the tests! 
 
+#### External examples
+
+[Outdoor Lights](https://github.com/Timmoth/OutdoorLights "Outdoor Lights")
 
 #### Upcoming
 - More complex examples
