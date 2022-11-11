@@ -4,17 +4,11 @@ using System.IO;
 using System.Threading.Tasks;
 using ElkTest.Api;
 using ElkTest.Device;
+using ElkTest.Device.Serial;
 using Microsoft.Extensions.Configuration;
 using Xunit.Abstractions;
 
 namespace ElkTest.Test;
-
-public enum SutSerial
-{
-    NONE,
-    UART,
-    USB
-}
 
 public class ElkTestFixture : IDisposable
 {
@@ -31,7 +25,7 @@ public class ElkTestFixture : IDisposable
         var testDeviceConfig = configuration.GetSection("ElkTestDevice").Get<ElkDeviceConfig>();
         var sutDeviceConfig = configuration.GetSection("ElkSUTDevice").Get<ElkDeviceConfig>();
 
-        _device = new ElkDevice(testDeviceConfig, sutDeviceConfig);
+        _device = new ElkDevice(new SerialDeviceFactory(), testDeviceConfig, sutDeviceConfig);
         _api = new ElkApi();
     }
 

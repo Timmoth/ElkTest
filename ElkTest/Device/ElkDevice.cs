@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO.Ports;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
-using ElkTest.Test;
+using ElkTest.Device.Serial;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
@@ -12,31 +11,21 @@ namespace ElkTest.Device;
 
 public class ElkDevice : IDisposable
 {
-    private readonly ElkDeviceSerialLogger _elkDeviceSerialLogger;
-    private readonly SerialPort serialPort;
+    private readonly ElkDeviceConfig _sutDeviceConfig;
+    private readonly ISerialDeviceFactory _deviceFactory;
+    private readonly ISerialDevice _testDevice;
+    private ISerialDevice? _sutDevice;
     private ITestOutputHelper? _output;
-    private int _requestId;
     private SutSerial _sutSerialMode = SutSerial.NONE;
+    private int _requestId;
 
-    public ElkDevice(ElkDeviceConfig testDeviceConfig, ElkDeviceConfig sutDeviceConfig)
+    public ElkDevice(ISerialDeviceFactory deviceFactory, ElkDeviceConfig testDeviceConfig, ElkDeviceConfig sutDeviceConfig)
     {
-        serialPort = new SerialPort(testDeviceConfig.Port)
-        {
-            BaudRate = testDeviceConfig.BaudRate,
-            Parity = Parity.None,
-            DataBits = 8,
-            StopBits = StopBits.One,
-            Handshake = Handshake.None,
-            ReadTimeout = 500,
-            WriteTimeout = 500,
-            DtrEnable = true,
-            RtsEnable = true
-        };
-
-        serialPort.DataReceived += SerialPortDataReceived;
-        serialPort.Open();
-
-        _elkDeviceSerialLogger = new ElkDeviceSerialLogger(sutDeviceConfig);
+        _deviceFactory = deviceFactory; 
+        _sutDeviceConfig = sutDeviceConfig;
+        _testDevice = _deviceFactory.Create();
+        _testDevice.OnDataReceived += OnTestDeviceDataReceived;
+        _testDevice.Open(testDeviceConfig);
     }
 
     public List<DeviceRequest> Requests { get; } = new();
@@ -44,40 +33,74 @@ public class ElkDevice : IDisposable
 
     public void Dispose()
     {
-        if (serialPort.IsOpen)
-        {
-            serialPort.Close();
-        }
-
-        _elkDeviceSerialLogger?.Dispose();
-        serialPort.Dispose();
+        _testDevice?.Dispose();
+        _sutDevice?.Dispose();
     }
 
     public async Task Reset(ITestOutputHelper output, SutSerial sutSerial = SutSerial.NONE)
     {
+        _output = output;
         _sutSerialMode = sutSerial;
 
-        _output = output;
         await SendAndWait(App.Reset());
+        await Task.Delay(1000);
+
         if (_sutSerialMode == SutSerial.USB)
         {
-            await Task.Delay(1000);
-            await _elkDeviceSerialLogger.Setup(output);
-            _elkDeviceSerialLogger.OnDataReceived += OnDataReceived;
+            _sutDevice?.Dispose();
+            _sutDevice = _deviceFactory.Create();
+            _sutDevice!.OnDataReceived += OnSutDeviceDataReceived;
+            _sutDevice!.Open(_sutDeviceConfig);
         }
         else
         {
-            _elkDeviceSerialLogger.Dispose();
+            _sutDevice?.Dispose();
         }
-
+        SerialOutput.Clear();
         Requests.Clear();
         _requestId = 0;
-
-        SerialOutput.Clear();
-        await Task.Delay(1000);
     }
 
-    private void OnDataReceived(object sender, List<string> lines)
+    private void OnTestDeviceDataReceived(object sender, List<string> lines)
+    {
+        foreach (var line in lines)
+        {
+            if (line.StartsWith("[SUT]"))
+            {
+                if (_sutSerialMode != SutSerial.NONE)
+                {
+                    var serialOutput = Device.Serial.SerialOutput.Parse(line.Remove(0, 5));
+                    if (serialOutput != null)
+                    {
+                        _output?.WriteLine($"[SUT]\t{serialOutput.Content}");
+                        SerialOutput.Add(serialOutput);
+                    }
+                }
+
+                continue;
+            }
+
+            var response = DeviceResponse.Parse(line);
+            if (response == null)
+            {
+                continue;
+            }
+
+            var request = Requests.FirstOrDefault(r => r.Id == response.Id);
+            if (request == default)
+            {
+                continue;
+            }
+
+            request.Response = response;
+
+            _output?.WriteLine("[TEST]\t" + request.Name + "(" + string.Join(", ", request.Arguments) + ") > " +
+                               (HttpStatusCode)request.Response.Status + "(" +
+                               string.Join(", ", request.Response.Arguments) + ")");
+        }
+    }
+
+    private void OnSutDeviceDataReceived(object sender, List<string> lines)
     {
         if (_sutSerialMode == SutSerial.NONE)
         {
@@ -86,7 +109,7 @@ public class ElkDevice : IDisposable
 
         foreach (var line in lines)
         {
-            var serialOutput = Device.SerialOutput.Parse(line);
+            var serialOutput = Device.Serial.SerialOutput.Parse(line);
             if (serialOutput == null)
             {
                 continue;
@@ -132,50 +155,9 @@ public class ElkDevice : IDisposable
         request.Id = _requestId++;
 
         Requests.Add(request);
-        serialPort.WriteLine(request.ToString());
+        _testDevice?.WriteLine(request.ToString());
 
         return request;
-    }
-
-    private void SerialPortDataReceived(object sender, SerialDataReceivedEventArgs e)
-    {
-        var lines = serialPort.ReadExisting().Split("\n");
-
-        foreach (var line in lines)
-        {
-            if (line.StartsWith("[SUT]"))
-            {
-                if (_sutSerialMode != SutSerial.NONE)
-                {
-                    var serialOutput = Device.SerialOutput.Parse(line.Remove(0, 5));
-                    if (serialOutput != null)
-                    {
-                        _output?.WriteLine($"[SUT]\t{serialOutput.Content}");
-                        SerialOutput.Add(serialOutput);
-                    }
-                }
-
-                continue;
-            }
-
-            var response = DeviceResponse.Parse(line);
-            if (response == null)
-            {
-                continue;
-            }
-
-            var request = Requests.FirstOrDefault(r => r.Id == response.Id);
-            if (request == default)
-            {
-                continue;
-            }
-
-            request.Response = response;
-
-            _output?.WriteLine("[TEST]\t" + request.Name + "(" + string.Join(", ", request.Arguments) + ") > " +
-                               (HttpStatusCode)request.Response.Status + "(" +
-                               string.Join(", ", request.Response.Arguments) + ")");
-        }
     }
 
     public static class App

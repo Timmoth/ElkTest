@@ -1,4 +1,5 @@
 using ElkTest.Device;
+using ElkTest.Device.Serial;
 using ElkTest.Test;
 using Xunit.Abstractions;
 

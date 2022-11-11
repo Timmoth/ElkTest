@@ -1,10 +1,10 @@
-﻿namespace ElkTest.Device;
+﻿namespace ElkTest.Device.Serial;
 
 public class SerialOutput
 {
     public string Content { get; set; }
 
-    public static SerialOutput? Parse(string input)
+    public static SerialOutput Parse(string input)
     {
         return new SerialOutput
         {
