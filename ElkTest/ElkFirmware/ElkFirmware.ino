@@ -5,29 +5,45 @@ static const int NotFound = 404;
 
 void setup() {
   Serial.begin(9600);
+
+  Serial2.setTX(4);
+  Serial2.setRX(5);
+  Serial2.begin(9600);
+
   while (!Serial) {
-    ; // wait for serial port to connect. Needed for native USB
+    ;  // wait for serial port to connect. Needed for native USB
   }
 }
 
 void loop() {
   ElkRequest* request;
-  while (Serial.available() == 0) {}
-  String input = Serial.readStringUntil('\n');
-  request = request->Parse(input);
-  if (request != NULL) {
-    Accept(request);
+
+  if (Serial.available() > 0) {
+    String input = Serial.readStringUntil('\n');
+    request = request->Parse(input);
+    if (request != NULL) {
+      Accept(request);
+    }
+  }
+
+  if (Serial2.available() > 0) {
+    String input2 = Serial2.readStringUntil('\0');
+    Serial.println("[SUT]" + input2);
   }
 }
 
 void Accept(ElkRequest* request) {
- if (request->Name == "AppReset") {
+
+  // App
+  if (request->Name == "AppReset") {
     pinMode(22, OUTPUT);
     digitalWrite(22, 1);
     digitalWrite(22, 0);
     request->Respond(Ok);
     return;
-  } else if (request->Name == "PinSet") {
+  }
+  // Pins
+  else if (request->Name == "PinSet") {
     int pin = request->Arguments[0].toInt();
     int value = request->Arguments[1].toInt();
     pinMode(pin, OUTPUT);
@@ -57,6 +73,14 @@ void Accept(ElkRequest* request) {
     }
 
     request->Respond(Ok, values);
+    return;
+  }
+
+  // Serial
+  else if (request->Name == "SerialSend") {
+    String content = request->Arguments[0];
+    Serial2.println(content);
+    request->Respond(Ok);
     return;
   }
 }

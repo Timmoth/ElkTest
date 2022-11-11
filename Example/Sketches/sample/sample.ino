@@ -10,6 +10,6 @@ void loop() {
     digitalWrite(20, LOW);
   }
 
-isPinHigh = !isPinHigh;
+  isPinHigh = !isPinHigh;
   delay(100);
 }

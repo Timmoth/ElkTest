@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO.Ports;
 using System.Linq;
 using System.Threading.Tasks;
@@ -17,6 +18,8 @@ public class ElkDeviceSerialLogger : IDisposable
         _testDeviceConfig = testDeviceConfig;
     }
 
+    public EventHandler<List<string>> OnDataReceived { get; set; }
+
     public void Dispose()
     {
         if (serialPort is { IsOpen: true })
@@ -27,11 +30,11 @@ public class ElkDeviceSerialLogger : IDisposable
         serialPort?.Dispose();
     }
 
-    public Task Setup(ITestOutputHelper output)
+    public async Task Setup(ITestOutputHelper output)
     {
         if (string.IsNullOrEmpty(_testDeviceConfig.Port))
         {
-            return Task.CompletedTask;
+            return;
         }
 
         _output = output;
@@ -56,6 +59,7 @@ public class ElkDeviceSerialLogger : IDisposable
             serialPort.DataReceived += SerialPortDataReceived;
             serialPort.Open();
             _output?.WriteLine("[SUT]\tconnected");
+            await Task.Delay(1000);
         }
         catch (Exception ex)
         {
@@ -64,8 +68,6 @@ public class ElkDeviceSerialLogger : IDisposable
             _output?.WriteLine(ex.ToString());
             _output?.WriteLine("Available ports: " + string.Join(", ", SerialPort.GetPortNames()));
         }
-
-        return Task.CompletedTask;
     }
 
     private void SerialPortDataReceived(object sender, SerialDataReceivedEventArgs e)
@@ -86,10 +88,6 @@ public class ElkDeviceSerialLogger : IDisposable
             return;
         }
 
-        _output?.WriteLine($"[SUT]\t{lines[0]}");
-        for (var i = 1; i < lines.Count; i++)
-        {
-            _output?.WriteLine($"\t\t{lines[i]}");
-        }
+        OnDataReceived?.Invoke(this, lines);
     }
 }

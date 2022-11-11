@@ -12,17 +12,9 @@ public class DeviceResponse
         Arguments = arguments;
     }
 
-    public DeviceResponse(int id, int status)
-    {
-        Id = id;
-        Status = status;
-        Arguments = new List<string>();
-    }
-
     public int Id { get; init; }
     public int Status { get; init; }
     public List<string> Arguments { get; init; }
-
     public override string ToString()
     {
         return $"{Id}:{Status}:{string.Join(";", Arguments)}";

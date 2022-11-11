@@ -4,18 +4,21 @@ using System.IO.Ports;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using ElkTest.Test;
 using Xunit.Abstractions;
+using Xunit.Sdk;
 
 namespace ElkTest.Device;
 
 public class ElkDevice : IDisposable
 {
-    private readonly List<DeviceRequest> _requests = new();
+    private readonly ElkDeviceSerialLogger _elkDeviceSerialLogger;
     private readonly SerialPort serialPort;
     private ITestOutputHelper? _output;
     private int _requestId;
+    private SutSerial _sutSerialMode = SutSerial.NONE;
 
-    public ElkDevice(ElkDeviceConfig testDeviceConfig)
+    public ElkDevice(ElkDeviceConfig testDeviceConfig, ElkDeviceConfig sutDeviceConfig)
     {
         serialPort = new SerialPort(testDeviceConfig.Port)
         {
@@ -32,7 +35,12 @@ public class ElkDevice : IDisposable
 
         serialPort.DataReceived += SerialPortDataReceived;
         serialPort.Open();
+
+        _elkDeviceSerialLogger = new ElkDeviceSerialLogger(sutDeviceConfig);
     }
+
+    public List<DeviceRequest> Requests { get; } = new();
+    public List<SerialOutput> SerialOutput { get; } = new();
 
     public void Dispose()
     {
@@ -41,16 +49,52 @@ public class ElkDevice : IDisposable
             serialPort.Close();
         }
 
+        _elkDeviceSerialLogger?.Dispose();
         serialPort.Dispose();
     }
 
-    public async Task Reset(ITestOutputHelper output)
+    public async Task Reset(ITestOutputHelper output, SutSerial sutSerial = SutSerial.NONE)
     {
+        _sutSerialMode = sutSerial;
+
         _output = output;
         await SendAndWait(App.Reset());
-        _requests.Clear();
+        if (_sutSerialMode == SutSerial.USB)
+        {
+            await Task.Delay(1000);
+            await _elkDeviceSerialLogger.Setup(output);
+            _elkDeviceSerialLogger.OnDataReceived += OnDataReceived;
+        }
+        else
+        {
+            _elkDeviceSerialLogger.Dispose();
+        }
+
+        Requests.Clear();
         _requestId = 0;
-        await Task.Delay(2000);
+
+        SerialOutput.Clear();
+        await Task.Delay(1000);
+    }
+
+    private void OnDataReceived(object sender, List<string> lines)
+    {
+        if (_sutSerialMode == SutSerial.NONE)
+        {
+            return;
+        }
+
+        foreach (var line in lines)
+        {
+            var serialOutput = Device.SerialOutput.Parse(line);
+            if (serialOutput == null)
+            {
+                continue;
+            }
+
+            _output?.WriteLine($"[SUT]\t{serialOutput.Content}");
+            SerialOutput.Add(serialOutput);
+        }
     }
 
     public async Task<DeviceResponse> SendAndWait(DeviceRequest request)
@@ -64,11 +108,30 @@ public class ElkDevice : IDisposable
         return request.Response;
     }
 
+    public async Task<SerialOutput> WaitFor(Func<SerialOutput, bool> predicate, TimeSpan timeOutDuration)
+    {
+        var timeOut = DateTimeOffset.UtcNow.Add(timeOutDuration);
+
+        while (DateTimeOffset.UtcNow < timeOut)
+        {
+            var serialOutput = SerialOutput.FirstOrDefault(predicate);
+            if (serialOutput != null)
+            {
+                return serialOutput;
+            }
+
+            await Task.Delay(250);
+        }
+
+        throw new XunitException(
+            $"Expected serial output, but it timed out after {timeOutDuration.TotalSeconds} seconds.");
+    }
+
     public DeviceRequest Send(DeviceRequest request)
     {
         request.Id = _requestId++;
 
-        _requests.Add(request);
+        Requests.Add(request);
         serialPort.WriteLine(request.ToString());
 
         return request;
@@ -80,13 +143,28 @@ public class ElkDevice : IDisposable
 
         foreach (var line in lines)
         {
+            if (line.StartsWith("[SUT]"))
+            {
+                if (_sutSerialMode != SutSerial.NONE)
+                {
+                    var serialOutput = Device.SerialOutput.Parse(line.Remove(0, 5));
+                    if (serialOutput != null)
+                    {
+                        _output?.WriteLine($"[SUT]\t{serialOutput.Content}");
+                        SerialOutput.Add(serialOutput);
+                    }
+                }
+
+                continue;
+            }
+
             var response = DeviceResponse.Parse(line);
             if (response == null)
             {
                 continue;
             }
 
-            var request = _requests.FirstOrDefault(r => r.Id == response.Id);
+            var request = Requests.FirstOrDefault(r => r.Id == response.Id);
             if (request == default)
             {
                 continue;
@@ -105,6 +183,17 @@ public class ElkDevice : IDisposable
         public static DeviceRequest Reset()
         {
             return new DeviceRequest("AppReset");
+        }
+    }
+
+    public static class Serial
+    {
+        public static DeviceRequest Send(string content)
+        {
+            return new DeviceRequest("SerialSend", new List<string>
+            {
+                content
+            });
         }
     }
 

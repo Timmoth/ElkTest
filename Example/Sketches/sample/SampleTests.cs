@@ -17,7 +17,7 @@ public class SampleTests : ElkTestBase
     public async void Pin20OutputsSquareWave()
     {
         //Arrange
-        var (device, _) = await _fixture.Setup(_output, logSUT: true);
+        var (device, _) = await _fixture.Setup(_output);
 
         //Act
         //Assert

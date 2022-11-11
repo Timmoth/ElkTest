@@ -9,11 +9,17 @@ using Xunit.Abstractions;
 
 namespace ElkTest.Test;
 
+public enum SutSerial
+{
+    NONE,
+    UART,
+    USB
+}
+
 public class ElkTestFixture : IDisposable
 {
     private readonly ElkApi _api;
     private readonly ElkDevice _device;
-    private readonly ElkDeviceSerialLogger _elkDeviceSerialLogger;
 
     public ElkTestFixture()
     {
@@ -25,9 +31,7 @@ public class ElkTestFixture : IDisposable
         var testDeviceConfig = configuration.GetSection("ElkTestDevice").Get<ElkDeviceConfig>();
         var sutDeviceConfig = configuration.GetSection("ElkSUTDevice").Get<ElkDeviceConfig>();
 
-        _device = new ElkDevice(testDeviceConfig);
-        _elkDeviceSerialLogger = new ElkDeviceSerialLogger(sutDeviceConfig);
-
+        _device = new ElkDevice(testDeviceConfig, sutDeviceConfig);
         _api = new ElkApi();
     }
 
@@ -35,24 +39,14 @@ public class ElkTestFixture : IDisposable
     {
         _api.Dispose();
         _device.Dispose();
-        _elkDeviceSerialLogger?.Dispose();
     }
 
     public async Task<(ElkDevice device, ElkApi api)> Setup(ITestOutputHelper output, List<ApiEndpoint> requests = null,
-        bool logSUT = false)
+        SutSerial sutSerial = SutSerial.NONE)
     {
         _api.Setup(output, requests ?? new List<ApiEndpoint>());
 
-        await _device.Reset(output);
-
-        if (logSUT)
-        {
-            await _elkDeviceSerialLogger.Setup(output);
-        }
-        else
-        {
-            _elkDeviceSerialLogger.Dispose();
-        }
+        await _device.Reset(output, sutSerial);
 
         return (_device, _api);
     }
