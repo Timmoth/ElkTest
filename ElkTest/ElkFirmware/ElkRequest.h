@@ -4,7 +4,6 @@
 
 class ElkRequest {
 public:
-  ElkRequest();
   void Init(int id, String name, String* arguments, int argumentCount);
   int Id;
   String Name;

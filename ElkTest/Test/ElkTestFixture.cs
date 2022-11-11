@@ -13,6 +13,7 @@ public class ElkTestFixture : IDisposable
 {
     private readonly ElkApi _api;
     private readonly ElkDevice _device;
+    private readonly ElkDeviceSerialLogger _elkDeviceSerialLogger;
 
     public ElkTestFixture()
     {
@@ -21,9 +22,12 @@ public class ElkTestFixture : IDisposable
             .AddJsonFile("appsettings.json")
             .Build();
 
-        var deviceConfig = configuration.GetSection("ElkDevice").Get<ElkDeviceConfig>();
+        var testDeviceConfig = configuration.GetSection("ElkTestDevice").Get<ElkDeviceConfig>();
+        var sutDeviceConfig = configuration.GetSection("ElkSUTDevice").Get<ElkDeviceConfig>();
 
-        _device = new ElkDevice(deviceConfig);
+        _device = new ElkDevice(testDeviceConfig);
+        _elkDeviceSerialLogger = new ElkDeviceSerialLogger(sutDeviceConfig);
+
         _api = new ElkApi();
     }
 
@@ -31,19 +35,25 @@ public class ElkTestFixture : IDisposable
     {
         _api.Dispose();
         _device.Dispose();
+        _elkDeviceSerialLogger?.Dispose();
     }
 
-    public async Task<ElkDevice> Setup(ITestOutputHelper output)
+    public async Task<(ElkDevice device, ElkApi api)> Setup(ITestOutputHelper output, List<ApiEndpoint> requests = null,
+        bool logSUT = false)
     {
-        _api.Setup(output, new List<ApiEndpoint>());
-        await _device.Reset(output);
-        return _device;
-    }
+        _api.Setup(output, requests ?? new List<ApiEndpoint>());
 
-    public async Task<(ElkDevice device, ElkApi api)> Setup(ITestOutputHelper output, List<ApiEndpoint> requests)
-    {
-        _api.Setup(output, requests);
         await _device.Reset(output);
+
+        if (logSUT)
+        {
+            await _elkDeviceSerialLogger.Setup(output);
+        }
+        else
+        {
+            _elkDeviceSerialLogger.Dispose();
+        }
+
         return (_device, _api);
     }
 }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO.Ports;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using Xunit.Abstractions;
 
@@ -9,17 +10,16 @@ namespace ElkTest.Device;
 
 public class ElkDevice : IDisposable
 {
+    private readonly List<DeviceRequest> _requests = new();
     private readonly SerialPort serialPort;
     private ITestOutputHelper? _output;
     private int _requestId;
 
-    private readonly List<DeviceRequest> _requests = new();
-
-    public ElkDevice(ElkDeviceConfig config)
+    public ElkDevice(ElkDeviceConfig testDeviceConfig)
     {
-        serialPort = new SerialPort(config.Port)
+        serialPort = new SerialPort(testDeviceConfig.Port)
         {
-            BaudRate = config.BaudRate,
+            BaudRate = testDeviceConfig.BaudRate,
             Parity = Parity.None,
             DataBits = 8,
             StopBits = StopBits.One,
@@ -46,11 +46,11 @@ public class ElkDevice : IDisposable
 
     public async Task Reset(ITestOutputHelper output)
     {
-        _output = null;
-        await SendAndWait(Device.App.Reset());
         _output = output;
+        await SendAndWait(App.Reset());
         _requests.Clear();
         _requestId = 0;
+        await Task.Delay(2000);
     }
 
     public async Task<DeviceResponse> SendAndWait(DeviceRequest request)
@@ -68,9 +68,8 @@ public class ElkDevice : IDisposable
     {
         request.Id = _requestId++;
 
-        _output?.WriteLine("-> \t" + request);
-        serialPort.WriteLine(request.ToString());
         _requests.Add(request);
+        serialPort.WriteLine(request.ToString());
 
         return request;
     }
@@ -94,7 +93,39 @@ public class ElkDevice : IDisposable
             }
 
             request.Response = response;
-            _output?.WriteLine("<- \t" + response);
+
+            _output?.WriteLine("[TEST]\t" + request.Name + "(" + string.Join(", ", request.Arguments) + ") > " +
+                               (HttpStatusCode)request.Response.Status + "(" +
+                               string.Join(", ", request.Response.Arguments) + ")");
+        }
+    }
+
+    public static class App
+    {
+        public static DeviceRequest Reset()
+        {
+            return new DeviceRequest("AppReset");
+        }
+    }
+
+    public static class Pins
+    {
+        public static DeviceRequest Get(int pin, int sampleDuration = -1, int sampleRate = -1)
+        {
+            return new DeviceRequest("PinGet", new List<string>
+            {
+                pin.ToString(),
+                sampleDuration.ToString(),
+                sampleRate.ToString()
+            });
+        }
+
+        public static DeviceRequest Set(int pin, int value)
+        {
+            return new DeviceRequest("PinSet", new List<string>
+            {
+                pin.ToString(), value.ToString()
+            });
         }
     }
 }

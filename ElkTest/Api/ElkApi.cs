@@ -37,7 +37,7 @@ public class ElkApi : IDisposable
                 var endPoint = _endpoints.FirstOrDefault(h => ShouldHandle(h, context, body));
                 var handled = endPoint != null;
 
-                _requestLog.Add(new ApiRequest()
+                _requestLog.Add(new ApiRequest
                 {
                     Time = DateTimeOffset.UtcNow,
                     Body = body,
@@ -46,26 +46,38 @@ public class ElkApi : IDisposable
                     QueryString = context.Request.QueryString.Value ?? string.Empty,
                     Handled = handled
                 });
-    
+
 
                 var handledStatus = handled ? "handled" : "unhandled";
-                _output?.WriteLine($"{handledStatus}\t {context.Request.Method}\t {context.Request.Path}");
-                _output?.WriteLine($"\tRequest body: \t{body}");
+                _output?.WriteLine($"[API]\t{context.Request.Method} {context.Request.Path} {handledStatus}");
+                if (!string.IsNullOrWhiteSpace(body))
+                {
+                    _output?.WriteLine($"\tRequest body: \t{body}");
+                }
 
                 if (handled)
                 {
-                    _output?.WriteLine($"\tResponse body: \t{endPoint!.ResponseBody}");
-                    await context.Response.WriteAsync(endPoint!.ResponseBody);
+                    if (!string.IsNullOrWhiteSpace(endPoint!.ResponseBody))
+                    {
+                        _output?.WriteLine($"\t\tResponse body: \t{endPoint!.ResponseBody}");
+                        await context.Response.WriteAsync(endPoint!.ResponseBody);
+                    }
                 }
                 else
                 {
                     await next.Invoke();
                 }
+
                 _output?.WriteLine("");
             });
-            
+
             app.Run("https://*:6392");
         }, cancellationTokenSource.Token);
+    }
+
+    public void Dispose()
+    {
+        cancellationTokenSource.Dispose();
     }
 
     public void Setup(ITestOutputHelper output, List<ApiEndpoint> requests)
@@ -73,11 +85,7 @@ public class ElkApi : IDisposable
         _output = output;
         _endpoints.Clear();
         _endpoints.AddRange(requests);
-    }
-
-    public List<ApiRequest> GetRequestLogs()
-    {
-        return _requestLog;
+        output.WriteLine("[API]\tSetup Api");
     }
 
     public bool ShouldHandle(ApiEndpoint config, HttpContext context, string body)
@@ -106,11 +114,6 @@ public class ElkApi : IDisposable
         return true;
     }
 
-    public void Dispose()
-    {
-        cancellationTokenSource.Dispose();
-    }
-
     public async Task<ApiRequest?> WaitFor(Func<ApiRequest, bool> predicate, TimeSpan timeOutDuration)
     {
         var timeOut = DateTimeOffset.UtcNow.Add(timeOutDuration);
@@ -126,6 +129,7 @@ public class ElkApi : IDisposable
             await Task.Delay(250);
         }
 
-        throw new XunitException($"Expected request to be made, but it timed out after {timeOutDuration.TotalSeconds} seconds.");
+        throw new XunitException(
+            $"Expected request to be made, but it timed out after {timeOutDuration.TotalSeconds} seconds.");
     }
 }

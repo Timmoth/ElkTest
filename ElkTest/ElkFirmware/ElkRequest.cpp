@@ -1,8 +1,5 @@
 #include "ElkRequest.h"
 
-ElkRequest::Elkkequest() {
-}
-
 void ElkRequest::Init(int id, String name, String* arguments, int argumentCount) {
   Id = id;
   Name = name;
