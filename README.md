@@ -28,6 +28,21 @@ ElkTest enables users to debug & test embedded systems using xunit integration t
 - Plug in the Pico
 - Select the device + port 
 - Flash the firmware
+- Add appsettings.json to test project
+- Fill out appsettings.json (ElkSUTDevice is optional)
+```json
+{
+  "ElkTestDevice": {
+    "Port": "COM12",
+    "BaudRate": 9600
+  },
+  "ElkSUTDevice": {
+    "Port": "COM11",
+    "BaudRate": 9600
+  }
+}
+```
+- Set appsettings 'copy to output directory' property to 'copy if newer'
 
 ### How does it work?
 
