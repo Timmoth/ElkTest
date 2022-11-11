@@ -125,3 +125,5 @@ Then run the tests!
 - Improve documentation
 - Test PWM
 - Test I2C
+- Test Serial
+- Hardware pass / fail buttons
