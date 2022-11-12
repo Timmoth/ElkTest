@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Internal;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
@@ -15,11 +16,13 @@ public class ElkApi : IDisposable
 {
     private readonly List<ApiEndpoint> _endpoints = new();
     private readonly List<ApiRequest> _requestLog = new();
+    private readonly ISystemClock _systemClock;
     private readonly CancellationTokenSource cancellationTokenSource = new();
     private ITestOutputHelper? _output;
 
-    public ElkApi()
+    public ElkApi(ISystemClock systemClock)
     {
+        _systemClock = systemClock;
         _ = Task.Run(() =>
         {
             var builder = WebApplication.CreateBuilder();
@@ -114,11 +117,11 @@ public class ElkApi : IDisposable
         return true;
     }
 
-    public async Task<ApiRequest?> WaitFor(Func<ApiRequest, bool> predicate, TimeSpan timeOutDuration)
+    public async Task<ApiRequest> WaitFor(Func<ApiRequest, bool> predicate, TimeSpan timeOutDuration)
     {
-        var timeOut = DateTimeOffset.UtcNow.Add(timeOutDuration);
+        var timeOut = _systemClock.UtcNow.Add(timeOutDuration);
 
-        while (DateTimeOffset.UtcNow < timeOut)
+        while (_systemClock.UtcNow < timeOut)
         {
             var request = _requestLog.FirstOrDefault(predicate);
             if (request != null)

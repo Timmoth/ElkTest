@@ -2,8 +2,8 @@
 
 public class SerialDeviceFactory : ISerialDeviceFactory
 {
-    public ISerialDevice Create()
+    public ISerialDevice Create(ElkDeviceConfig config)
     {
-        return new ElkSerialDevice();
+        return new ElkSerialDevice(config);
     }
 }

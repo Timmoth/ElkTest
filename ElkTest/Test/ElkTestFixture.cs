@@ -6,6 +6,7 @@ using ElkTest.Api;
 using ElkTest.Device;
 using ElkTest.Device.Serial;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Internal;
 using Xunit.Abstractions;
 
 namespace ElkTest.Test;
@@ -25,8 +26,8 @@ public class ElkTestFixture : IDisposable
         var testDeviceConfig = configuration.GetSection("ElkTestDevice").Get<ElkDeviceConfig>();
         var sutDeviceConfig = configuration.GetSection("ElkSUTDevice").Get<ElkDeviceConfig>();
 
-        _device = new ElkDevice(new SerialDeviceFactory(), testDeviceConfig, sutDeviceConfig);
-        _api = new ElkApi();
+        _device = new ElkDevice(new SerialDeviceFactory(), testDeviceConfig, sutDeviceConfig, new SystemClock());
+        _api = new ElkApi(new SystemClock());
     }
 
     public void Dispose()

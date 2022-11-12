@@ -5,7 +5,6 @@ namespace ElkTest.Device.Serial;
 
 public interface ISerialDevice : IDisposable
 {
-    void Open(ElkDeviceConfig config);
-    public EventHandler<List<string>> OnDataReceived { get; set; }
+    event EventHandler<List<string>> OnDataReceived;
     void WriteLine(string content);
 }

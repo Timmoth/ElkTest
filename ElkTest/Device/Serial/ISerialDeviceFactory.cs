@@ -2,5 +2,5 @@
 
 public interface ISerialDeviceFactory
 {
-    ISerialDevice Create();
+    ISerialDevice Create(ElkDeviceConfig config);
 }

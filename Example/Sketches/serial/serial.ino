@@ -10,8 +10,19 @@ void setup() {
 }
 
 void loop() {
-  while (Serial1.available() == 0) {}
-  String input = Serial1.readStringUntil('\0');
+  String input = "";
+  if (Serial.available() > 0) {
+    input = Serial.readStringUntil('\0');
+  }
+
+  if (Serial1.available() > 0) {
+    input = Serial1.readStringUntil('\0');
+  }
+
+  if (input == "") {
+    return;
+  }
+
   input.replace("\n", "");
   input.replace("\r", "");
 

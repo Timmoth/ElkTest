@@ -1,7 +1,11 @@
-﻿namespace ElkTest.Device;
+﻿using System.Text.Json.Serialization;
 
-public class ElkDeviceConfig
+namespace ElkTest.Device;
+
+public record ElkDeviceConfig(string Port, int BaudRate)
 {
-    public string Port { get; set; } = string.Empty;
-    public int BaudRate { get; set; } = 9600;
+    [JsonConstructor]
+    public ElkDeviceConfig() : this("", 0)
+    {
+    }
 }

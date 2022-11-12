@@ -7,25 +7,9 @@ namespace ElkTest.Device.Serial;
 
 public class ElkSerialDevice : ISerialDevice
 {
-    private SerialPort serialPort;
+    private readonly SerialPort serialPort;
 
-    public EventHandler<List<string>> OnDataReceived { get; set; }
-    public void WriteLine(string content)
-    {
-        serialPort.WriteLine(content);
-    }
-
-    public void Dispose()
-    {
-        if (serialPort is { IsOpen: true })
-        {
-            serialPort.Close();
-        }
-
-        serialPort?.Dispose();
-    }
-
-    public void Open(ElkDeviceConfig config)
+    public ElkSerialDevice(ElkDeviceConfig config)
     {
         serialPort = new SerialPort(config.Port)
         {
@@ -42,6 +26,23 @@ public class ElkSerialDevice : ISerialDevice
 
         serialPort.DataReceived += SerialPortDataReceived;
         serialPort.Open();
+    }
+
+    public event EventHandler<List<string>> OnDataReceived;
+
+    public void WriteLine(string content)
+    {
+        serialPort.WriteLine(content);
+    }
+
+    public void Dispose()
+    {
+        if (serialPort is { IsOpen: true })
+        {
+            serialPort.Close();
+        }
+
+        serialPort?.Dispose();
     }
 
     private void SerialPortDataReceived(object sender, SerialDataReceivedEventArgs e)

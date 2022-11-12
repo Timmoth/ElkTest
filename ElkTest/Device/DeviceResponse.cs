@@ -15,6 +15,7 @@ public class DeviceResponse
     public int Id { get; init; }
     public int Status { get; init; }
     public List<string> Arguments { get; init; }
+
     public override string ToString()
     {
         return $"{Id}:{Status}:{string.Join(";", Arguments)}";
