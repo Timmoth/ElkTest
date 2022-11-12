@@ -8,6 +8,7 @@ ElkTest enables users to debug & test embedded systems using xunit integration t
 - Simulating hardware inputs enables you to reliably test your code without physically recreating scenarios
 - Easily test networking / http requests
 - Device / Platform agnostic
+- View SUT serial output in test log
 
 ### Setup:
 
@@ -139,5 +140,5 @@ Then run the tests!
 - Improve documentation
 - Test PWM
 - Test I2C
-- Test Serial
 - Hardware pass / fail buttons
+- Hardware test output display
