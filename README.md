@@ -58,7 +58,9 @@ Tests are written in dotnet using xunit, examples can be seen below.
 ### Examples:
 ------------
 
-#### Echo
+
+[Echo](https://github.com/Timmoth/ElkTest/tree/main/Example/Sketches/echo "Echo")
+
 The echo example sets analog pin 28 and asserts that the SUT in turn echos the same value to pin 27, the same logic is tested for digital pins 21 & 20
 
 Flash the firmware to the SUT
@@ -100,7 +102,19 @@ Assert.Equal(expectedOutput, actualValue);
 ```
 
 
-#### Network
+[Sample](https://github.com/Timmoth/ElkTest/blob/main/Example/Sketches/sample "Sample")
+
+Sample digital pin values over time. 
+
+
+
+[Serial](https://github.com/Timmoth/ElkTest/tree/main/Example/Sketches/serial "Serial")
+
+Tests writing serial data to the SUT over USB & UART & asserts on the Serial output from the device.
+
+
+
+[Network](https://github.com/Timmoth/ElkTest/tree/main/Example/Sketches/network "Network")
 
 The network example makes a sequence of POST, GET, PUT, DELETE requests.
 
